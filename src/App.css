@@ -1,0 +1,12 @@
+.app {
+  margin-top: 5vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh;
+  align-items: center;
+  min-width: 75vw;
+  min-height: 75vh;
+  background-color: var(--color-4);
+  border-radius: 1vmin;
+  opacity: 0.8;
+}

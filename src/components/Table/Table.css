@@ -1,0 +1,45 @@
+table {
+  display: table;
+  width: 80%;
+  background-color: rgb(105, 105, 105);
+  border-radius: 1vmin;
+}
+
+th {
+  width: 33.33%;
+  padding: 5px 10px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 0 1vmin 0 0;
+}
+th:nth-child(odd) {
+  border-radius: 1vmin 0 0 0;
+}
+td {
+  width: 33.33%;
+  padding: 5px 10px;
+  text-align: center;
+  background-color: #777;
+}
+
+td:nth-last-child(1) {
+  border-radius: 0 0 1vmin 0;
+}
+td:nth-last-child(2) {
+  border-radius: 0 0 0 1vmin;
+}
+
+@media (max-width: 600px) {
+  table {
+    width: 80%;
+  }
+  th {
+    display: none;
+  }
+  td {
+    display: block;
+    width: 100%;
+    min-height: 40px;
+    border-bottom: 1px solid #000;
+  }
+}
