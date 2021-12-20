@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Chart, Bar } from './Chart';
 
 function fractionPercent(canvasActualHeight, val, maxValue) {
@@ -7,30 +7,20 @@ function fractionPercent(canvasActualHeight, val, maxValue) {
   return popPercent * canvasPercent;
 }
 
-const ChartWrapper = (data, labaelName, amountKey) => {
-  amountKey = 'population';
-  labaelName = 'name';
+const ChartWrapper = ({ chartData, labaelName, amountKey }) => {
+  const [maxValue, setMaxValue] = useState(0);
+  const [chartWidth, setChartWidth] = useState(0);
+  const chartRef = useRef(null);
 
-  const popData = [
-    { name: 'Naboo', population: 800000 },
-    { name: 'Aldoraan', population: 400000 },
-    { name: 'Gamma', population: 600000 },
-    { name: 'Beta', population: 200000 },
-  ];
   const calculateMaxValue = (dataArr, amountKey) => {
     return [...dataArr].sort((a, b) => b[amountKey] - a[amountKey])[0][amountKey];
   };
 
-  const [chartData, setChartData] = useState(popData);
-  const [maxValue, setMaxValue] = useState(calculateMaxValue(chartData, amountKey));
-  const [chartWidth, setChartWidth] = useState(0);
-  const chartRef = useRef(null);
+  useEffect(() => {
+    if (chartData?.length) setMaxValue(calculateMaxValue(chartData, amountKey));
+  }, [chartData]);
 
   const onChartRefEmit = (ref) => {
-    console.log(
-      '🚀 ~ file: ChartWrapper.jsx ~ line 28 ~ onChartRefEmit ~ ref',
-      ref.current.clientWidth
-    );
     setChartWidth(ref.current.clientWidth);
   };
 
@@ -44,20 +34,21 @@ const ChartWrapper = (data, labaelName, amountKey) => {
   return (
     <>
       <Chart height={chartHeight} width={width} ref={chartRef} emitChartRef={onChartRefEmit}>
-        {chartData.map((data, index) => {
-          const barHeight = fractionPercent(chartHeight - 30, data[amountKey], maxPopulation);
-          return (
-            <Bar
-              key={data.name}
-              x={index * (barWidth + barMargin)}
-              y={chartHeight - barHeight}
-              width={barWidth}
-              height={barHeight - 30}
-              labaelName={data[labaelName]}
-              amount={data[amountKey]}
-            />
-          );
-        })}
+        {chartData?.length &&
+          chartData.map((data, index) => {
+            const barHeight = fractionPercent(chartHeight - 30, data[amountKey], maxPopulation);
+            return (
+              <Bar
+                key={data.name}
+                x={index * (barWidth + barMargin)}
+                y={chartHeight - barHeight}
+                width={barWidth}
+                height={barHeight - 30}
+                labaelName={data[labaelName]}
+                amount={data[amountKey]}
+              />
+            );
+          })}
       </Chart>
     </>
   );
