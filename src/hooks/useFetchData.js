@@ -7,6 +7,8 @@ db.config.debug = false
 
 
 const baseVehicleUrl = 'https://www.swapi.tech/api/vehicles/'
+const basePlanetsUrl = 'https://www.swapi.tech/api/planets/'
+const basePilotsUrl = 'https://www.swapi.tech/api/pilots/'
 
 async function getData(collectionName, urlAsKey) {
   try {
@@ -40,11 +42,9 @@ async function fetchFromApiOrIndexedDb(collectionName, urlAskey) {
     const docId = urlAskey
 
     const findDocument = await getData(collectionName, docId)
-    console.log("🚀 ~ file: useFetchData.js ~ line 45 ~ fetchFromApiOrIndexedDb ~ findDocument", findDocument)
 
     if (!findDocument) {
       const fetchData = await apiCall(urlAskey)
-      console.info("🚀 ~ file: useFetchData.js ~ line 49 ~ fetchFromApiOrIndexedDb ~ fetchData", fetchData)
       if (fetchData) return await addData(collectionName, docId, fetchData)
     }
 
@@ -61,6 +61,8 @@ export const useFetchData = () => {
   const [vehiclesData, setVehiclesData] = useState([])
   const [pilotData, setPilotData] = useState([])
   const [planetData, setPlanetData] = useState([])
+  const [totals, setTotals] = useState({ planets: 0, vehicles: 0 })
+  const [loading, setIsLoading] = useState(false)
 
   useEffect(() => {
 
@@ -75,10 +77,8 @@ export const useFetchData = () => {
             if (vehicleResponse?.result?.properties?.pilots?.length) {
               for (const pilot of vehicleResponse.result.properties.pilots) {
                 const pilotData = await fetchFromApiOrIndexedDb('pilots', pilot)
-                console.log("🚀 ~ file: useFetchData.js ~ line 79 ~ seedStateRecursively ~ pilotData", pilotData)
                 if (pilotData?.result?.properties?.homeworld) {
                   const planet = await fetchFromApiOrIndexedDb('planets', pilotData.result.properties.homeworld)
-                  console.log("🚀 ~ file: useFetchData.js ~ line 81 ~ seedStateRecursively ~ planet", planet)
                 }
               }
             }
@@ -92,7 +92,13 @@ export const useFetchData = () => {
 
     const seedState = async () => {
       try {
-        const done = await seedIndexedDbRecursively(baseVehicleUrl)
+        setIsLoading(true)
+        const vehicles = await fetchFromApiOrIndexedDb('totals', baseVehicleUrl)
+        const planets = await fetchFromApiOrIndexedDb('totals', basePlanetsUrl)
+        if (vehicles.total_records) setTotals(totals => ({ ...totals, vehicles: vehicles.total_records }))
+        if (planets.total_records) setTotals(totals => ({ ...totals, planets: planets.total_records }))
+
+        await seedIndexedDbRecursively(baseVehicleUrl)
 
         console.log('Done fetching all vehicles!')
 
@@ -100,27 +106,25 @@ export const useFetchData = () => {
         const pilotsCollection = await db.collection('pilots').get()
         const planetsCollection = await db.collection('planets').get()
 
-        console.log("🚀 ~ file: useFetchData.js ~ line 94 ~ seedStateRecursively ~ planetsCollection", {
-          vehiclesCollection,
-          pilotsCollection,
-          planetsCollection
-        })
-
         setVehiclesData(d => vehiclesCollection)
         setPilotData(d => pilotsCollection)
         setPlanetData(d => planetsCollection)
-
       } catch (error) {
         console.log("🚀 ~ file: useFetchData.js ~ line 97 ~ seedState ~ error", error)
-
+      } finally {
+        console.log("🚀 ~ file: useFetchData.js ~ line 116 ~ seedState ~ FINALLY false", false)
+        setIsLoading(false)
       }
     }
+
     seedState()
   }, [])
 
   return {
     vehiclesData,
     pilotData,
-    planetData
+    planetData,
+    totals,
+    loading
   }
 }

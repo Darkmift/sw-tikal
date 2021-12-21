@@ -12,9 +12,45 @@ const rawData = [
 ];
 
 function App() {
-  const { vehiclesData, pilotData, planetData } = useFetchData();
+  const { vehiclesData, pilotData, planetData, totals, loading } = useFetchData();
+  const totalVehiclesFetched = vehiclesData.filter((v) => v?.result?.uid);
 
   const [popData, setPopData] = useState([]);
+  const [vehicleWithLargestSum, setVehicleWithLargestSum] = useState({});
+
+  const findVehicleWithLargestSum = () => {
+    return vehiclesData.reduce((targetVehicle, item) => {
+      const vehiclePilots = item?.result?.properties?.pilots;
+      if (!vehiclePilots?.length) return targetVehicle;
+
+      const vehiclePilotsInfo = [];
+
+      const planetsInfo = vehiclePilots.map((url) => {
+        const pilotInfo = pilotData.find((pilot) => pilot.result.properties.url === url);
+        if (pilotInfo) vehiclePilotsInfo.push(pilotInfo);
+        const planetInfo = planetData.find(
+          (planet) => planet.result.properties.url === pilotInfo?.result?.properties?.homeworld
+        );
+        return planetInfo;
+      });
+
+      const totalSum = planetsInfo.reduce((population, planet) => {
+        population += +planet?.result?.properties?.population;
+        return population;
+      }, 0);
+      console.log('🚀 ~ file: App.jsx ~ line 38 ~ totalSum ~ planetsInfo', planetsInfo);
+
+      const itemClone = JSON.parse(JSON.stringify(item));
+      itemClone.totalSum = totalSum;
+      itemClone.vehiclePilotsInfo = vehiclePilotsInfo;
+      itemClone.planetsInfo = planetsInfo;
+      if (!targetVehicle.totalSum) {
+        targetVehicle = itemClone;
+      }
+
+      return itemClone.totalSum > targetVehicle.totalSum ? itemClone : targetVehicle;
+    }, {});
+  };
 
   let amountKey = 'population';
   let labaelName = 'name';
@@ -23,19 +59,26 @@ function App() {
     console.log('🚀 ~ file: App.jsx ~ line 17 ~ App ~ vehiclesData', vehiclesData);
     setPopData(rawData);
   }, []);
-  
+
   useEffect(() => {
-    console.log('🚀 ~ file: App.jsx ~ line 17 ~ App ~ vehiclesData', {
-      vehiclesData,
-      pilotData,
-      planetData,
-    });
-  }, [vehiclesData, pilotData, planetData]);
+    if (!loading && vehiclesData.length && planetData.length && pilotData.length)
+      setVehicleWithLargestSum(findVehicleWithLargestSum(vehiclesData));
+  }, [loading]);
 
   return (
     <div className="app">
       <h1>Tikal Code Challenge</h1>
-      <Table />
+      <h3>
+        {totalVehiclesFetched.length != totals.vehicles && (
+          <span>
+            fetching vehicles info....( {totalVehiclesFetched}/{totals.vehicles})
+          </span>
+        )}
+      </h3>
+
+      <code>{JSON.stringify(vehicleWithLargestSum, null, 2)}</code>
+
+      <Table vehicleWithLargestSum={vehicleWithLargestSum} />
       <ChartWrapper amountKey={amountKey} labaelName={labaelName} chartData={popData} />
     </div>
   );
