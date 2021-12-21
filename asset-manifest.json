@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/sw-tikal/static/css/main.b1da0902.css",
+    "main.css": "/sw-tikal/static/css/main.fd57a5bb.css",
     "main.js": "/sw-tikal/static/js/main.242f0fbe.js",
     "static/media/swbg.jpg": "/sw-tikal/static/media/swbg.3d4196c2894b3c0802bc.jpg",
     "index.html": "/sw-tikal/index.html",
-    "main.b1da0902.css.map": "/sw-tikal/static/css/main.b1da0902.css.map",
+    "main.fd57a5bb.css.map": "/sw-tikal/static/css/main.fd57a5bb.css.map",
     "main.242f0fbe.js.map": "/sw-tikal/static/js/main.242f0fbe.js.map"
   },
   "entrypoints": [
-    "static/css/main.b1da0902.css",
+    "static/css/main.fd57a5bb.css",
     "static/js/main.242f0fbe.js"
   ]
 }
