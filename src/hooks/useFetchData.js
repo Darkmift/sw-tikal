@@ -100,8 +100,6 @@ export const useFetchData = () => {
 
         await seedIndexedDbRecursively(baseVehicleUrl)
 
-        console.log('Done fetching all vehicles!')
-
         const vehiclesCollection = await db.collection('vehicles').get()
         const pilotsCollection = await db.collection('pilots').get()
         const planetsCollection = await db.collection('planets').get()
@@ -112,7 +110,7 @@ export const useFetchData = () => {
       } catch (error) {
         console.log("🚀 ~ file: useFetchData.js ~ line 97 ~ seedState ~ error", error)
       } finally {
-        console.log("🚀 ~ file: useFetchData.js ~ line 116 ~ seedState ~ FINALLY false", false)
+        console.log("🚀 ~ file: useFetchData.js ~ line 116 ~ seedState ~ FINALLY FINISHED FETCHING OR ERROR", false)
         setIsLoading(false)
       }
     }

@@ -4,12 +4,12 @@ import Table from './components/Table/Table';
 import ChartWrapper from './components/ChartWrapper';
 import { useFetchData } from './hooks/useFetchData';
 
-const rawData = [
-  { name: 'Naboo', population: 800000 },
-  { name: 'Aldoraan', population: 400000 },
-  { name: 'Gamma', population: 600000 },
-  { name: 'Beta', population: 200000 },
-];
+// const rawData = [
+//   { name: 'Naboo', population: 800000 },
+//   { name: 'Aldoraan', population: 400000 },
+//   { name: 'Gamma', population: 600000 },
+//   { name: 'Beta', population: 200000 },
+// ];
 
 function App() {
   const { vehiclesData, pilotData, planetData, totals, loading } = useFetchData();
@@ -38,7 +38,6 @@ function App() {
         population += +planet?.result?.properties?.population;
         return population;
       }, 0);
-      console.log('🚀 ~ file: App.jsx ~ line 38 ~ totalSum ~ planetsInfo', planetsInfo);
 
       const itemClone = JSON.parse(JSON.stringify(item));
       itemClone.totalSum = totalSum;
@@ -55,12 +54,24 @@ function App() {
   let amountKey = 'population';
   let labaelName = 'name';
 
-  useEffect(() => {
-    console.log('🚀 ~ file: App.jsx ~ line 17 ~ App ~ vehiclesData', vehiclesData);
-    setPopData(rawData);
-  }, []);
+  // useEffect(() => {
+  //   setPopData(rawData);
+  // }, []);
 
   useEffect(() => {
+    if (!loading && planetData.length) {
+      let planetClone = JSON.parse(JSON.stringify(planetData));
+
+      planetClone = planetClone
+        .map((p) => ({
+          name: p.result.properties.name,
+          population: +p.result.properties.population || 0,
+        }))
+        .sort((a, b) => b.population - a.population);
+
+      setPopData(planetClone.slice(0, 5));
+    }
+
     if (!loading && vehiclesData.length && planetData.length && pilotData.length)
       setVehicleWithLargestSum(findVehicleWithLargestSum(vehiclesData));
   }, [loading]);
@@ -75,11 +86,12 @@ function App() {
           </span>
         )}
       </h3>
-
-      <code>{JSON.stringify(vehicleWithLargestSum, null, 2)}</code>
-
+      {/* <code>{JSON.stringify(vehicleWithLargestSum, null, 2)}</code> */}
       <Table vehicleWithLargestSum={vehicleWithLargestSum} />
-      <ChartWrapper amountKey={amountKey} labaelName={labaelName} chartData={popData} />
+      <h2>Top 5 Most Populated Planets</h2>
+      {popData.length && (
+        <ChartWrapper amountKey={amountKey} labaelName={labaelName} chartData={popData} />
+      )}
     </div>
   );
 }

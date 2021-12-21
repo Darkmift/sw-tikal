@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Chart, Bar } from './Chart';
 
 function fractionPercent(canvasActualHeight, val, maxValue) {
-  const popPercent = (val / maxValue) * 100;
+  let popPercent = (val / maxValue) * 100;
   const canvasPercent = canvasActualHeight / 100;
+  if (popPercent < 5) popPercent = 10;
   return popPercent * canvasPercent;
 }
 
@@ -36,7 +37,7 @@ const ChartWrapper = ({ chartData, labaelName, amountKey }) => {
       <Chart height={chartHeight} width={width} ref={chartRef} emitChartRef={onChartRefEmit}>
         {chartData?.length &&
           chartData.map((data, index) => {
-            const barHeight = fractionPercent(chartHeight - 30, data[amountKey], maxPopulation);
+            let barHeight = fractionPercent(chartHeight - 30, data[amountKey], maxPopulation);
             return (
               <Bar
                 key={data.name}
