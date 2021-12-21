@@ -3,6 +3,7 @@ import './App.css';
 import Table from './components/Table/Table';
 import ChartWrapper from './components/ChartWrapper';
 import { useFetchData } from './hooks/useFetchData';
+import Spinner from './components/Spinner/Spinner';
 
 // const rawData = [
 //   { name: 'Naboo', population: 800000 },
@@ -12,7 +13,7 @@ import { useFetchData } from './hooks/useFetchData';
 // ];
 
 function App() {
-  const { vehiclesData, pilotData, planetData, totals, loading } = useFetchData();
+  const { vehiclesData, pilotData, planetData, totals, fetchedVehicles, loading } = useFetchData();
   const totalVehiclesFetched = vehiclesData.filter((v) => v?.result?.uid);
 
   const [popData, setPopData] = useState([]);
@@ -80,17 +81,23 @@ function App() {
     <div className="app">
       <h1>Tikal Code Challenge</h1>
       <h3>
-        {totalVehiclesFetched.length != totals.vehicles && (
+        {loading && totalVehiclesFetched.length != totals.vehicles && (
           <span>
-            fetching vehicles info....( {totalVehiclesFetched}/{totals.vehicles})
+            fetching vehicles info... &nbsp;( {+fetchedVehicles || '0'}/{totals.vehicles})
+            <br />
+            The first time takes a while...
           </span>
         )}
       </h3>
+
+      {loading && <Spinner />}
       {/* <code>{JSON.stringify(vehicleWithLargestSum, null, 2)}</code> */}
-      <Table vehicleWithLargestSum={vehicleWithLargestSum} />
-      <h2>Top 5 Most Populated Planets</h2>
-      {popData.length && (
-        <ChartWrapper amountKey={amountKey} labaelName={labaelName} chartData={popData} />
+      {!loading && vehicleWithLargestSum && <Table vehicleWithLargestSum={vehicleWithLargestSum} />}
+      {!loading && popData.length && (
+        <>
+          <h2>Top 5 Most Populated Planets</h2>
+          <ChartWrapper amountKey={amountKey} labaelName={labaelName} chartData={popData} />
+        </>
       )}
     </div>
   );

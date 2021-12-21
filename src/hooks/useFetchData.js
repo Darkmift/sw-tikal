@@ -62,6 +62,7 @@ export const useFetchData = () => {
   const [pilotData, setPilotData] = useState([])
   const [planetData, setPlanetData] = useState([])
   const [totals, setTotals] = useState({ planets: 0, vehicles: 0 })
+  const [fetchedVehicles, setFetchedVehicles] = useState(0)
   const [loading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export const useFetchData = () => {
           for (const vehicleApiData of initialDocs.results) {
             if (!vehicleApiData.url) continue;
             const vehicleResponse = await fetchFromApiOrIndexedDb('vehicles', vehicleApiData.url)
-
+            setFetchedVehicles(amount => amount += 1)
             if (vehicleResponse?.result?.properties?.pilots?.length) {
               for (const pilot of vehicleResponse.result.properties.pilots) {
                 const pilotData = await fetchFromApiOrIndexedDb('pilots', pilot)
@@ -123,6 +124,7 @@ export const useFetchData = () => {
     pilotData,
     planetData,
     totals,
+    fetchedVehicles,
     loading
   }
 }
