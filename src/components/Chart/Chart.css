@@ -3,4 +3,5 @@ svg {
   background-color: rgb(214, 192, 150);
   padding: 0 2vmin;
   width: 75%;
+  max-height: 45vh;
 }
