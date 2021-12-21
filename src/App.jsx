@@ -12,7 +12,7 @@ const rawData = [
 ];
 
 function App() {
-  const { vehiclesData } = useFetchData();
+  const { vehiclesData, pilotData, planetData } = useFetchData();
 
   const [popData, setPopData] = useState([]);
 
@@ -23,6 +23,14 @@ function App() {
     console.log('🚀 ~ file: App.jsx ~ line 17 ~ App ~ vehiclesData', vehiclesData);
     setPopData(rawData);
   }, []);
+  
+  useEffect(() => {
+    console.log('🚀 ~ file: App.jsx ~ line 17 ~ App ~ vehiclesData', {
+      vehiclesData,
+      pilotData,
+      planetData,
+    });
+  }, [vehiclesData, pilotData, planetData]);
 
   return (
     <div className="app">

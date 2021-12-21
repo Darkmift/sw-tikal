@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 import apiCall from '../api'
 import Localbase from 'localbase'
 
 var db = new Localbase('db')
-// var vehicleCollection = db.collection('vehicles')
-// var pilotCollection = db.collection('pilots')
-// var planetCollection = db.collection('planets')
+db.config.debug = false
+
 
 const baseVehicleUrl = 'https://www.swapi.tech/api/vehicles/'
-
-
 
 async function getData(collectionName, urlAsKey) {
   try {
@@ -42,7 +39,7 @@ async function fetchFromApiOrIndexedDb(collectionName, urlAskey) {
     if (!collectionName || !urlAskey) throw 'missing args'
     const docId = urlAskey
 
-    const findDocument = await getData('vehicles', docId)
+    const findDocument = await getData(collectionName, docId)
     console.log("🚀 ~ file: useFetchData.js ~ line 45 ~ fetchFromApiOrIndexedDb ~ findDocument", findDocument)
 
     if (!findDocument) {
@@ -62,19 +59,21 @@ async function fetchFromApiOrIndexedDb(collectionName, urlAskey) {
 export const useFetchData = () => {
 
   const [vehiclesData, setVehiclesData] = useState([])
+  const [pilotData, setPilotData] = useState([])
+  const [planetData, setPlanetData] = useState([])
 
   useEffect(() => {
 
-    const seedStateRecursively = async (apiUrl) => {
+    const seedIndexedDbRecursively = async (apiUrl) => {
       try {
         const initialDocs = await fetchFromApiOrIndexedDb('vehicles', apiUrl)
-        console.log("🚀 ~ file: useFetchData.js ~ line 72 ~ seedState ~ initialDocs", { initialDocs, link: initialDocs.next })
         if (initialDocs.results.length) {
           for (const vehicleApiData of initialDocs.results) {
             if (!vehicleApiData.url) continue;
-            const vehicleData = await fetchFromApiOrIndexedDb('vehicles', vehicleApiData.url)
-            if (vehicleData?.result?.properties?.pilots?.length) {
-              for (const pilot of vehicleData.result.properties.pilots) {
+            const vehicleResponse = await fetchFromApiOrIndexedDb('vehicles', vehicleApiData.url)
+
+            if (vehicleResponse?.result?.properties?.pilots?.length) {
+              for (const pilot of vehicleResponse.result.properties.pilots) {
                 const pilotData = await fetchFromApiOrIndexedDb('pilots', pilot)
                 console.log("🚀 ~ file: useFetchData.js ~ line 79 ~ seedStateRecursively ~ pilotData", pilotData)
                 if (pilotData?.result?.properties?.homeworld) {
@@ -85,16 +84,43 @@ export const useFetchData = () => {
             }
           }
         }
-        if (initialDocs.next) await seedStateRecursively(initialDocs.next)
-
-        console.log('Done fetching all vehicles!')
+        if (initialDocs.next) return await seedIndexedDbRecursively(initialDocs.next)
       } catch (error) {
         console.log("🚀 ~ file: useFetchData.js ~ line 48 ~ seedState ~ error", error)
       }
     }
 
-    seedStateRecursively(baseVehicleUrl)
+    const seedState = async () => {
+      try {
+        const done = await seedIndexedDbRecursively(baseVehicleUrl)
+
+        console.log('Done fetching all vehicles!')
+
+        const vehiclesCollection = await db.collection('vehicles').get()
+        const pilotsCollection = await db.collection('pilots').get()
+        const planetsCollection = await db.collection('planets').get()
+
+        console.log("🚀 ~ file: useFetchData.js ~ line 94 ~ seedStateRecursively ~ planetsCollection", {
+          vehiclesCollection,
+          pilotsCollection,
+          planetsCollection
+        })
+
+        setVehiclesData(d => vehiclesCollection)
+        setPilotData(d => pilotsCollection)
+        setPlanetData(d => planetsCollection)
+
+      } catch (error) {
+        console.log("🚀 ~ file: useFetchData.js ~ line 97 ~ seedState ~ error", error)
+
+      }
+    }
+    seedState()
   }, [])
 
-  return { vehiclesData }
+  return {
+    vehiclesData,
+    pilotData,
+    planetData
+  }
 }
